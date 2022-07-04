@@ -3,10 +3,7 @@ use std::sync::Arc;
 use lazy_static::lazy_static;
 use reqwest::Client;
 use scraper::{Html, Selector};
-use tokio::{
-    runtime::Runtime,
-    sync::{mpsc, Semaphore},
-};
+use tokio::sync::{mpsc, Semaphore};
 use url::Url;
 
 const MAX_TASK: usize = 16;
@@ -24,6 +21,7 @@ lazy_static! {
     };
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 struct Quote {
     text: String,
@@ -54,15 +52,15 @@ fn parse_quote_html(page: Html) -> Vec<Quote> {
         .collect()
 }
 
-fn main() {
-    let rt = Runtime::new().unwrap();
+#[tokio::main]
+async fn main() {
     let pool = Arc::new(Semaphore::new(MAX_TASK));
     let (tx, mut rx) = mpsc::unbounded_channel::<Quote>();
 
     for page in 1..20 {
         let pool = Arc::clone(&pool);
         let tx = tx.clone();
-        rt.spawn(async move {
+        tokio::spawn(async move {
             let _permit = pool.acquire().await.unwrap();
             let text = download_quote_html(page).await.unwrap();
             let html = Html::parse_document(&text);
@@ -74,7 +72,7 @@ fn main() {
     }
     drop(tx);
 
-    while let Some(quote) = rx.blocking_recv() {
+    while let Some(quote) = rx.recv().await {
         println!("{:?}", quote);
     }
 }

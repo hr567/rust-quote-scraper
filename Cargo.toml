@@ -1,12 +1,12 @@
 [package]
-name = "quote-scrape"
+name = "quote-scraper"
 version = "0.1.0"
 authors = ["hr567 <hr567@hr567.me>"]
 edition = "2018"
 
 [dependencies]
 lazy_static = "1.4.0"
-reqwest = "0.11.0"
-scraper = "0.12.0"
-tokio = { version = "1.0.2", features = [ "rt-multi-thread", "sync" ] }
-url = "2.2.0"
+reqwest = "0.11.11"
+scraper = "0.13.0"
+tokio = { version = "1.19.2", features = ["macros", "rt-multi-thread", "sync"] }
+url = "2.2.2"

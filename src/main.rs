@@ -1,25 +1,23 @@
 use std::sync::Arc;
 
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use reqwest::Client;
 use scraper::{Html, Selector};
 use tokio::sync::{mpsc, Semaphore};
 use url::Url;
 
-const MAX_TASK: usize = 16;
+const MAX_TASK: usize = 8;
 
-lazy_static! {
-    static ref URL: Url = Url::parse("https://quotes.toscrape.com/").unwrap();
-    static ref CLIENT: Client = {
-        use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
-        let mut headers = HeaderMap::new();
-        let user_agent = HeaderValue::from_static(
-            r"Mozilla/5.0 (X11; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0",
-        );
-        headers.insert(USER_AGENT, user_agent);
-        Client::builder().default_headers(headers).build().unwrap()
-    };
-}
+static URL: Lazy<Url> = Lazy::new(|| Url::parse("https://quotes.toscrape.com/").unwrap());
+static CLIENT: Lazy<Client> = Lazy::new(|| {
+    use reqwest::header::{HeaderMap, HeaderValue, USER_AGENT};
+    let mut headers = HeaderMap::new();
+    let user_agent = HeaderValue::from_static(
+        r"Mozilla/5.0 (X11; Linux x86_64; rv:84.0) Gecko/20100101 Firefox/84.0",
+    );
+    headers.insert(USER_AGENT, user_agent);
+    Client::builder().default_headers(headers).build().unwrap()
+});
 
 #[allow(dead_code)]
 #[derive(Debug)]
@@ -36,13 +34,11 @@ async fn download_quote_html(idx: usize) -> reqwest::Result<String> {
     Ok(html)
 }
 
+static QUOTE: Lazy<Selector> = Lazy::new(|| Selector::parse(r#".quote"#).unwrap());
+static TEXT: Lazy<Selector> = Lazy::new(|| Selector::parse(r#".text"#).unwrap());
+static AUTHOR: Lazy<Selector> = Lazy::new(|| Selector::parse(r#".author"#).unwrap());
+static TAG: Lazy<Selector> = Lazy::new(|| Selector::parse(r#".tag"#).unwrap());
 fn parse_quote_html(page: Html) -> Vec<Quote> {
-    lazy_static! {
-        static ref QUOTE: Selector = Selector::parse(r#".quote"#).unwrap();
-        static ref TEXT: Selector = Selector::parse(r#".text"#).unwrap();
-        static ref AUTHOR: Selector = Selector::parse(r#".author"#).unwrap();
-        static ref TAG: Selector = Selector::parse(r#".tag"#).unwrap();
-    }
     page.select(&QUOTE)
         .map(|quote| Quote {
             text: quote.select(&TEXT).next().unwrap().inner_html(),

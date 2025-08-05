@@ -5,8 +5,7 @@ authors = ["hr567 <hr567@hr567.me>"]
 edition = "2021"
 
 [dependencies]
-once_cell = "1.18.0"
-reqwest = "0.11.22"
-scraper = "0.18.1"
-tokio = { version = "1.34.0", features = ["macros", "rt-multi-thread", "sync"] }
-url = "2.4.1"
+reqwest = "0.12.22"
+scraper = "0.23.1"
+tokio = { version = "1.47.1", features = ["macros", "rt-multi-thread", "sync"] }
+url = "2.5.4"

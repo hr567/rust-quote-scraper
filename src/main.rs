@@ -48,7 +48,7 @@ fn parse_quote_html(html: &str) -> Vec<Quote> {
         .collect()
 }
 
-#[tokio::main]
+#[tokio::main(flavor = "current_thread")]
 async fn main() {
     let pool = Arc::new(Semaphore::new(MAX_TASK));
     let (tx, mut rx) = mpsc::channel(MAX_TASK);

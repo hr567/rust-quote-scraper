@@ -7,5 +7,5 @@ edition = "2021"
 [dependencies]
 reqwest = "0.12.22"
 scraper = "0.23.1"
-tokio = { version = "1.47.1", features = ["macros", "rt-multi-thread", "sync"] }
+tokio = { version = "1.47.1", features = ["macros", "sync"] }
 url = "2.5.4"
